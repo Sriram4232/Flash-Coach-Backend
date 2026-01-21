@@ -1,0 +1,15 @@
+Flask==3.0.2
+Flask-CORS==4.0.0
+
+pymongo==4.6.1
+dnspython==2.4.2
+
+python-dotenv==1.0.0
+groq==0.37.1
+
+werkzeug==3.0.1
+deep-translator==1.11.4
+SpeechRecognition==3.8.1
+gTTS==2.4.0
+requests>=2.31.0
+gunicorn

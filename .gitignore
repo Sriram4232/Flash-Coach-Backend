@@ -1,0 +1,19 @@
+# ============ ENVIRONMENT FILES ============
+.env
+.env.local
+*.env
+
+# ============ PYTHON CACHE ============
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ============ VIRTUAL ENVIRONMENTS ============
+venv/
+env/
+.venv/
+venv/
+env/
+.venv/

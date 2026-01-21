@@ -21,8 +21,6 @@ import base64
 import io
 import re
 
-translation_cache = {}
-
 # Load environment variables
 load_dotenv('.env')
 
@@ -41,14 +39,7 @@ print(f"Groq API: {'Configured' if GROQ_API_KEY else 'Not configured'}")
 
 # Initialize MongoDB
 try:
-    client = MongoClient(
-        MONGO_URI,
-        tls=True,
-        tlsAllowInvalidCertificates=True,
-        serverSelectionTimeoutMS=30000,
-        connectTimeoutMS=30000,
-        socketTimeoutMS=30000
-    )
+    client = MongoClient(MONGO_URI)
     # Test connection
     client.admin.command('ping')
     print("✅ MongoDB connected successfully!")
@@ -412,20 +403,6 @@ def translate_text(text: str, target_lang: str, source_lang: str = 'auto') -> st
         traceback.print_exc()
         # Return original text but log the error
         return text
-
-def translate_cached(text: str, target_lang: str, source_lang: str = 'auto') -> str:
-    if not text or target_lang == 'en':
-        return text
-
-    key = (hash(text), source_lang, target_lang)
-
-    if key in translation_cache:
-        return translation_cache[key]
-
-    translated = translate_text(text, target_lang, source_lang)
-    translation_cache[key] = translated
-    return translated
-    
 # Text-to-speech function
 def text_to_speech(text: str, lang: str) -> str:
     """Convert text to speech and return base64 encoded audio."""
@@ -644,7 +621,7 @@ def get_coaching_advice():
         
         if user_lang != 'en':
             try:
-                translated_query = translate_cached(query, 'en', user_lang)
+                translated_query = translate_text(query, 'en', user_lang)
                 print(f"🌍 Translated query to English: {translated_query[:50]}...")
             except Exception as e:
                 print(f"⚠️ Query translation failed: {e}")
@@ -717,13 +694,13 @@ def get_coaching_advice():
         if user_lang != 'en':
             try:
                 # Translate summary
-                translated_summary = translate_cached(llm_response['summary'], user_lang, 'en')
+                translated_summary = translate_text(llm_response['summary'], user_lang, 'en')
                 
                 # Translate strategies
                 translated_strategies = []
                 for strategy in llm_response['strategies']:
-                    translated_title = translate_cached(strategy['title'], user_lang, 'en')
-                    translated_desc = translate_cached(strategy['description'], user_lang, 'en')
+                    translated_title = translate_text(strategy['title'], user_lang, 'en')
+                    translated_desc = translate_text(strategy['description'], user_lang, 'en')
                     translated_strategies.append({
                         'title': translated_title,
                         'description': translated_desc,
@@ -788,7 +765,7 @@ def translate_text_endpoint():
         if not text:
             return jsonify({"error": "Text is required"}), 400
         
-        translated = translate_cached(text, target_lang, source_lang)
+        translated = translate_text(text, target_lang, source_lang)
         
         return jsonify({
             "original": text,
